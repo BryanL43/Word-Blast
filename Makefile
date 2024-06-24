@@ -33,14 +33,14 @@
 # will delete the executable and any object files in your directory.
 #
 
-FIRSTNAME=
-LASTNAME=
+FIRSTNAME=bryan
+LASTNAME=lee
 HW=4
 
 ROOTNAME=$(LASTNAME)_$(FIRSTNAME)_HW
 
 FOPTION=_main
-RUNOPTIONS=WarAndPeace.txt 2
+RUNOPTIONS=WarAndPeace.txt 4
 CC=gcc
 CFLAGS= -g -I.
 LIBS =-l pthread
