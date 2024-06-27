@@ -40,11 +40,20 @@ int arraySize = 2000;
 struct WordFreq* counterArray;
 int counterArraySize = 0;
 
+/**
+ * Thread routine that increments a word's frequency
+ * or adds a new word to the counterArray.
+ * @param args pointer to the buffer passed into the routine function
+*/
 void* counterThread(void* args) {
     char* buffer = (char*)args;
 
+    //Tokenize the buffer that holds the thread's portion of the file
     char* saveptr;
     char* token = strtok_r(buffer, delim, &saveptr);
+
+    //Iterates through the tokenized buffer to filter out words with fewer
+    //than six characters and count their frequencies
     while (token != NULL) {
         if (strlen(token) >= 6) {
             int found = 0;
@@ -63,6 +72,8 @@ void* counterThread(void* args) {
             //If word isn't in array then add it to array with frequency of 1
             if (!found) {
                 pthread_mutex_lock(&lock);
+
+                //Resize the counter array when it gets full
                 if (counterArraySize == arraySize - 1) {
                     arraySize += 500;
                     counterArray = realloc(counterArray, arraySize * sizeof(WordFreq));
@@ -72,6 +83,7 @@ void* counterThread(void* args) {
                     }
                 }
 
+                //Copies the unique word into the counterArray
                 counterArray[counterArraySize].word = strdup(token);
                 if (counterArray[counterArraySize].word == NULL) {
                     perror("Error copying word to array!\n");
@@ -87,12 +99,22 @@ void* counterThread(void* args) {
     }
 }
 
+/**
+ * A C implementation of the quicksort algorithm for sorting
+ * word frequencies in descending order.
+ * @param arr array of WordFreq structs with words and frequencies
+ * @param low starting index of the array segment to be sorted
+ * @param high ending index of the array segment to be sorted
+*/
 void quickSort(WordFreq* arr, int low, int high) {
     if (low < high) {
+        //Choose the last element as the pivot
         int pivot = arr[high].freq;
         int i = low - 1;
 
+        //Partition the array around the pivot
         for (int j = low; j < high; j++) {
+            //Move elements greater than or equal to the pivot to the left
             if (arr[j].freq >= pivot) {
                 i++;
                 WordFreq temp = arr[i];
@@ -100,13 +122,15 @@ void quickSort(WordFreq* arr, int low, int high) {
                 arr[j] = temp;
             }
         }
-
+        
+        //Place the pivot in its correct position
         WordFreq temp = arr[i + 1];
         arr[i + 1] = arr[high];
         arr[high] = temp;
 
         int pi = i + 1;
 
+        //Recursively sort the elements before and after the pivot
         quickSort(arr, low, pi - 1);
         quickSort(arr, pi + 1, high);
     }
@@ -149,29 +173,33 @@ int main (int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    //Calculate the buffer size for the fragmented file
+    //Calculate the size of the buffer for the segmented file parts
     int bufferSize = fileSize / threadCount;
     
+    //Instantiate the thread Buffer, which will contain the segmented file parts
     threadBuffer = malloc(threadCount * sizeof(char*));
     if (threadBuffer == NULL) {
         perror("Failed to allocate thread buffer array!\n");
         exit(EXIT_FAILURE);
     }
 
+    //Iterate through the number of threads
     for (int i = 0; i < threadCount; i++) {
+        //Instantiate each thread's buffer to hold their respective portion of the file
         threadBuffer[i] = malloc(bufferSize);
         if (threadBuffer[i] == NULL) {
             perror("Failed to instantiate thread buffer!\n");
             exit(EXIT_FAILURE);
         }
 
+        //Read a portion of the file into the buffer for each thread
         if (pread(file, threadBuffer[i], bufferSize, bufferSize * i) == -1) {
             perror("Unable to read file!\n");
             exit(EXIT_FAILURE);
         }
     }
 
-    //Instantiate initial counterArray that will hold all the words and their frequencies
+    //Initialize the counterArray to store all the words and their frequencies
     counterArray = malloc(arraySize * sizeof(WordFreq));
     if (counterArray == NULL) {
         perror("Failed to allocate counter array");
@@ -183,6 +211,7 @@ int main (int argc, char *argv[]) {
 
     pthread_t threads[threadCount];
 
+    //Create the threads and initiate their frequency counting routine
     for (int i = 0; i < threadCount; i++) {
         if (pthread_create(&threads[i], NULL, &counterThread, threadBuffer[i]) != 0) {
             perror("Failed to create a thread!\n");
@@ -190,10 +219,10 @@ int main (int argc, char *argv[]) {
         }
     }
     
+    //Join the threads when they are completed
     for (int i = 0; i < threadCount; i++) {
         if (pthread_join(threads[i], NULL) != 0) {
             perror("Failed to join threads!\n");
-            exit(EXIT_FAILURE);
         }
     }
 
