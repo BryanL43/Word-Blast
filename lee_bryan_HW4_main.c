@@ -87,7 +87,6 @@ void* counterThread(void* args) {
                 counterArray[counterArraySize].word = strdup(token);
                 if (counterArray[counterArraySize].word == NULL) {
                     perror("Error copying word to array!\n");
-                    exit(EXIT_FAILURE);
                 }
                 counterArray[counterArraySize].freq = 1;
                 counterArraySize++;
