@@ -75,7 +75,7 @@ void* counterThread(void* args) {
 
                 //Resize the counter array when it gets full
                 if (counterArraySize == arraySize - 1) {
-                    arraySize += 500;
+                    arraySize *= 2;
                     counterArray = realloc(counterArray, arraySize * sizeof(WordFreq));
                     if (counterArray == NULL) {
                         perror("Failed to resize counter array");
