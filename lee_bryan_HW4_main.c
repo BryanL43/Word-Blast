@@ -231,7 +231,8 @@ int main (int argc, char *argv[]) {
 
     printf("Printing top 10 words 6 characters or more.\n");
     for (int i = 0; i < 10; i++) { 
-        printf("Number %d is %s with a count of %d\n", i + 1, counterArray[i].word, counterArray[i].freq);
+        printf("Number %d is %s with a count of %d\n",
+                i + 1, counterArray[i].word, counterArray[i].freq);
     }
 
     //**************************************************************
