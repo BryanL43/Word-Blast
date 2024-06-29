@@ -138,7 +138,7 @@ void quickSort(WordFreq* arr, int low, int high) {
 int main (int argc, char *argv[]) {
     //**************************************************************
     // DO NOT CHANGE THIS BLOCK
-    // Time stamp start
+    //Time stamp start
     struct timespec startTime;
     struct timespec endTime;
 
@@ -237,14 +237,15 @@ int main (int argc, char *argv[]) {
 
     //**************************************************************
     // DO NOT CHANGE THIS BLOCK
-    // Clock output
+    //Clock output
     clock_gettime(CLOCK_REALTIME, &endTime);
     time_t sec = endTime.tv_sec - startTime.tv_sec;
     long n_sec = endTime.tv_nsec - startTime.tv_nsec;
-    if (endTime.tv_nsec < startTime.tv_nsec) {
+    if (endTime.tv_nsec < startTime.tv_nsec)
+        {
         --sec;
         n_sec = n_sec + 1000000000L;
-    }
+        }
 
     printf("Total Time was %ld.%09ld seconds\n", sec, n_sec);
     //**************************************************************
