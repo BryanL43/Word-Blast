@@ -58,7 +58,7 @@ void* counterThread(void* args) {
         if (strlen(token) >= 6) {
             int found = 0;
 
-            //If word is already in array then increment frequency
+            //If word is already in list then increment frequency
             for (int i = 0; i < counterArraySize; i++) {
                 if (strcasecmp(counterArray[i].word, token) == 0) {
                     pthread_mutex_lock(&lock);
@@ -69,7 +69,8 @@ void* counterThread(void* args) {
                 }
             }
 
-            //If word isn't in array then add it to array with frequency of 1
+            //If the word isn't found in the list,
+            //then add it to the list with a frequency of 1
             if (!found) {
                 pthread_mutex_lock(&lock);
 
@@ -83,7 +84,7 @@ void* counterThread(void* args) {
                     }
                 }
 
-                //Copies the unique word into the counterArray
+                //Copies the unique word into the array
                 counterArray[counterArraySize].word = strdup(token);
                 if (counterArray[counterArraySize].word == NULL) {
                     perror("Error copying word to array!\n");
@@ -99,11 +100,10 @@ void* counterThread(void* args) {
 }
 
 /**
- * A C implementation of the quicksort algorithm for sorting
- * word frequencies in descending order.
- * @param arr array of WordFreq structs with words and frequencies
- * @param low starting index of the array segment to be sorted
- * @param high ending index of the array segment to be sorted
+ * Quicksort algorithm for sorting word frequencies in descending order.
+ * @param arr list of WordFreq structs with words and frequencies
+ * @param low starting index of the list segment to be sorted
+ * @param high ending index of the list segment to be sorted
 */
 void quickSort(WordFreq* arr, int low, int high) {
     if (low < high) {
@@ -111,7 +111,7 @@ void quickSort(WordFreq* arr, int low, int high) {
         int pivot = arr[high].freq;
         int i = low - 1;
 
-        //Partition the array around the pivot
+        //Partition the list around the pivot
         for (int j = low; j < high; j++) {
             //Move elements greater than or equal to the pivot to the left
             if (arr[j].freq >= pivot) {
@@ -172,33 +172,32 @@ int main (int argc, char *argv[]) {
         exit(EXIT_FAILURE);
     }
 
-    //Calculate the size of the buffer for the segmented file parts
-    int bufferSize = fileSize / threadCount;
-    
-    //Instantiate the thread Buffer, which will contain the segmented file parts
+    //Instantiate the thread's Buffer
     threadBuffer = malloc(threadCount * sizeof(char*));
     if (threadBuffer == NULL) {
         perror("Failed to allocate thread buffer array!\n");
         exit(EXIT_FAILURE);
     }
 
-    //Iterate through the number of threads
+    int bufferSize = fileSize / threadCount;
+
+    //Instantiate thread buffers and populate them with file chunks based on thread count
     for (int i = 0; i < threadCount; i++) {
-        //Instantiate each thread's buffer to hold their respective portion of the file
+        //Instantiate each thread's buffer
         threadBuffer[i] = malloc(bufferSize);
         if (threadBuffer[i] == NULL) {
             perror("Failed to instantiate thread buffer!\n");
             exit(EXIT_FAILURE);
         }
 
-        //Read a portion of the file into the buffer for each thread
+        //Put a portion of the file into the thread's buffer
         if (pread(file, threadBuffer[i], bufferSize, bufferSize * i) == -1) {
             perror("Unable to read file!\n");
             exit(EXIT_FAILURE);
         }
     }
 
-    //Initialize the counterArray to store all the words and their frequencies
+    //Initialize the list to store all the words and their frequencies
     counterArray = malloc(arraySize * sizeof(WordFreq));
     if (counterArray == NULL) {
         perror("Failed to allocate counter array");
@@ -210,7 +209,7 @@ int main (int argc, char *argv[]) {
 
     pthread_t threads[threadCount];
 
-    //Create the threads and initiate their frequency counting routine
+    //Create threads to execute the frequency counting function
     for (int i = 0; i < threadCount; i++) {
         if (pthread_create(&threads[i], NULL, &counterThread, threadBuffer[i]) != 0) {
             perror("Failed to create a thread!\n");
