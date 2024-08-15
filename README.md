@@ -1,4 +1,5 @@
 # Assignment 4 - Word Blast
+**`Score: 100/100`**</br>
 
 Welcome to your fourth homework assignment.  
 
